@@ -1,4 +1,4 @@
-//Ejercicio 1
+//Ejercicio 2 Y 3 JUNTOS
 //SysTick que interrumpe cada 10 ms
 /*
 #include "LPC17xx.h"
@@ -14,9 +14,7 @@ int main(){
 
 	while(1){
 
-	LPC_GPIO0 -> FIOCLR = (1<<22);
-	delay(10);
-	LPC_GPIO0 -> FIOSET = (1<<22);
+	LPC_GPIO0 -> FIOPIN ^= (1<<22);
 	delay(10);
 
 	}
@@ -42,10 +40,74 @@ void delay(uint32_t ms){
 	while((ticks - tiempo10)<ms){}
 }
 */
+
 /*
- * Ejercicio 2:
+ * Ejercicio 4:
  */
 #include "LPC17xx.h"
+
+void config();
+void delay(uint16_t ms);
+void configSysTick();
+volatile uint16_t ticks;
+const uint32_t tabla[16]= {
+		0x3F, // 0 -> 0b00111111 (a,b,c,d,e,f encendidos)
+	    0x06, // 1 -> 0b00000110 (b,c encendidos)
+	    0x5B, // 2
+	    0x4F, // 3
+	    0x66, // 4
+	    0x6D, // 5
+	    0x7D, // 6
+	    0x07, // 7
+	    0x7F, // 8
+	    0x6F, // 9
+	    0x77, // A
+	    0x7C, // b
+	    0x39, // C
+	    0x5E, // d
+	    0x79, // E
+	    0x71  // F
+};
+volatile uint16_t contador = 0;
+int main(void){
+
+	config();
+	configSysTick();
+
+	while(1){
+		LPC_GPIO0 -> FIOCLR = 0xFF;
+		LPC_GPIO0 -> FIOSET = tabla[contador];
+
+		contador++;
+		if(contador == 16){
+			contador = 0;
+		}
+		delay(1000);
+	}
+}
+void config(void){
+
+	LPC_PINCON -> PINSEL0 &= ~(0xFFFF);
+	LPC_GPIO0  -> FIODIR  |= (0xFF);
+
+}
+void configSysTick(void){
+	SysTick -> LOAD = (SystemCoreClock)/1000 -1;
+	SysTick -> VAL  = 0;
+	SysTick -> CTRL = 7u;
+}
+void SysTick_Handler(void){
+	ticks++;
+}
+
+void delay(uint16_t ms){
+	volatile uint16_t tiempo1s = ticks;
+	while((ticks - tiempo1s)<ms){}
+}
+
+
+
+
 
 
 
